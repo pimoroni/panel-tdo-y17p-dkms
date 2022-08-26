@@ -151,10 +151,15 @@ static int tdo_y17p_prepare(struct drm_panel *panel)
 static int tdo_y17p_enable(struct drm_panel *panel)
 {
 	struct tdo_y17p *ctx = panel_to_tdo_y17p(panel);
-	const u16 msg[] = { MIPI_DCS_SET_DISPLAY_ON };
 	int ret;
 
-	ret = tdo_y17p_write_msg(ctx, msg, ARRAY_SIZE(msg));
+	ret = regulator_enable(ctx->power);
+	if (ret)
+		return ret;
+
+	ret = tdo_y17p_write_msg(ctx, panel_init, NUM_INIT_REGS);
+
+	msleep(120);
 
 	return ret;
 }
@@ -162,10 +167,12 @@ static int tdo_y17p_enable(struct drm_panel *panel)
 static int tdo_y17p_disable(struct drm_panel *panel)
 {
 	struct tdo_y17p *ctx = panel_to_tdo_y17p(panel);
-	const u16 msg[] = { MIPI_DCS_SET_DISPLAY_OFF };
+	const u16 msg[] = { MIPI_DCS_ENTER_SLEEP_MODE };
 	int ret;
 
 	ret = tdo_y17p_write_msg(ctx, msg, ARRAY_SIZE(msg));
+
+	msleep(120);
 
 	return ret;
 }
